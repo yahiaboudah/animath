@@ -145,6 +145,72 @@ function grid(numDashes){
   }
 }
 
-axis(21);
-axis(21);
-grid(21);
+function Point(radius){
+   radius = (typeof radius !== 'undefined')?radius:8;
+   this.radius = radius;
+   var stretch = radius/1.81066;
+   var shape = new Shape();
+   shape.vertices = [[-radius,0],[0,radius],[radius,0],[0,-radius]];
+   shape.inTangents = [[0,-stretch],[-stretch,0],[0,stretch],[stretch,0]];
+   shape.outTangents = [[0,stretch],[stretch,0],[0,-stretch],[-stretch,0]];
+   shape.closed = true;
+   var layer = app.project.activeItem.layers.addShape();
+   var commentPrompt = prompt("Enter the comment: ","xpoint");
+   layer.comment = commentPrompt;
+   var path = layer.content.addProperty("ADBE Vector Shape - Group");
+   var path0 = layer.content.property("ADBE Vector Shape - Group");
+   path0.path.setValue(shape);
+   layer.content.addProperty("ADBE Vector Graphic - Fill");
+   var currComp = app.project.activeItem;
+   layer.name = "circle "+currComp.layers.length;
+   return layer;
+}
+
+function getLayerWithComment(comment){
+  var comp = app.project.activeItem;
+  for(var i=1;i<comp.layers.length+1;i++){
+    if(comp.layer(i).comment == comment){
+      return comp.layer(i);
+    }
+  }
+}
+
+function yPoint(){
+  var functionLayer = app.project.activeItem.selectedLayers[0];
+  var p = Point(12);
+  var xpoint = getLayerWithComment('xpoint');
+  var xline = getLayerWithComment('x');
+  var yline = getLayerWithComment('y');
+
+  var dashSpacing = xline.property("Effects").property("Axis").property("dashSpacing").value;
+  var oneEvery = xline.property("Effects").property("Axis").property("oneEveryNDashes").value;
+  var xbasis = dashSpacing * oneEvery;
+
+  var dashSpacing = yline.property("Effects").property("Axis").property("dashSpacing").value;
+  var oneEvery = yline.property("Effects").property("Axis").property("oneEveryNDashes").value;
+  var ybasis = dashSpacing * oneEvery;
+
+  p.transform.position.expression = "function theFunction(x){\n"
+  +"    return "+functionLayer.name+";\n"
+  +"}"
+  +"var xbasis = "+xbasis+";\n"
+  +"var ybasis = "+ybasis+";\n"
+  +"var x = thisLayer.transform.position[0];\n"
+  +"var otherX = (thisComp.layer(\""+xpoint.name+"\").transform.position[0]-960)/xbasis;\n"
+  +"var y = 540 - theFunction(otherX)*ybasis;\n"
+  +"[x,y];";
+}
+
+function functionPoint(){
+  var p = Point(12);
+  var xpoint = getLayerWithComment("xpoint");
+  var ypoint = getLayerWithComment("ypoint");
+  var positionExpression = "var x = thisComp.layer(\""+xpoint.name+"\").transform.position[0];\n"
+  +"var y = thisComp.layer(\""+ypoint.name+"\").transform.position[1];\n"
+  +"[x,y];";
+  p.transform.position.expression = positionExpression;
+}
+
+//var p = Point(12);
+//yPoint();
+functionPoint();

@@ -241,7 +241,24 @@ function createGridButtonClicked(){
   }
 }
 
+// Additional functions:
+function getBasis(axisName){
+  var comp = app.project.activeItem;
+  for(var i=1;i<comp.layers.length+1;i++){
+    if(comp.layer(i).comment == axisName){
+      var numDashes = comp.layer(i).property("Effects").property("Axis").property("numDashes").value;
+      var dashSpacing = comp.layer(i).property("Effects").property("Axis").property("dashSpacing").value;
+      var oneEvery = comp.layer(i).property("Effects").property("Axis").property("oneEveryNDashes").value;
+      numDashes = ((numDashes -1)/2)/oneEvery;
+      dashSpacing = dashSpacing * oneEvery;
+      return [-numDashes,numDashes,dashSpacing];
+    }
+  }
+}
+//
+
 function graphFunctionButtonClicked(){
+  var comp = app.project.activeItem;
   var functionText = prompt("Enter the function that you want to graph: ","x*x");
   var optimizeGraph = confirm("Do you want to optimize it?");
   if(functionText == null || optimizeGraph == null){
@@ -249,7 +266,17 @@ function graphFunctionButtonClicked(){
   }
   else{
   if(defaultFunctionGraphChecked.value){
-    Plot(optimizeGraph,functionText);
+    var xline = getBasis('x');
+    var yline = getBasis('y');
+    if(xline == null || yline==null){
+      Plot(optimizeGraph,functionText);
+    }else{
+      var start = xline[0];
+      var end = xline[1];
+      var xbasis = xline[2];
+      var ybasis = yline[2];
+      Plot(optimizeGraph,functionText,xbasis,ybasis,start,end);
+    }
   }else{
     var xbasis = prompt("Enter the X basis: ",100);
     xbasis = eval(xbasis);
@@ -403,6 +430,7 @@ function Point(radius){
    layer.comment = radius;
    this.layer = layer;
    this.name = layer.name;
+   return layer;
 }
 
 function centerAnchorPoint(layer){
@@ -432,7 +460,7 @@ function DynamicLine(x0,y0,x1,y1){
   +"inTangents = [], outTangents = [], is_closed = true)";
 
   path0.path.expression = pathExpression;
-  centerAnchorPoint(shape);
+  shape.transform.anchorPoint.setValue([0,0]);
   this.layer = shape;
   return this.layer;
 }
