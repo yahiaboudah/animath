@@ -269,7 +269,8 @@ function graphFunctionButtonClicked(){
 function Axis(numDashes,textIncluded){
   var comp = app.project.activeItem;
   var lineShape = comp.layers.addShape();
-  lineShape.name = "Axis line";
+  var namePrompt = prompt("Enter the name of the axis","Axis: ");
+  lineShape.name = namePrompt.toString();
   var axisProp = lineShape.property("Effects").addProperty("Axis");
   // Just add Group 1
   var mainLineGroup = lineShape.content.addProperty("ADBE Vector Group");
@@ -484,7 +485,7 @@ function doFunction(fn){
 
 
 function createAxisButtonClicked(){
-  var numDashes = prompt("Enter the number of dashes: ",10);
+  var numDashes = prompt("Enter the number of dashes: ",20);
   numDashes = eval(numDashes);
   var textIncludedConfirm = confirm("Do you want to include numbers?");
   Axis(numDashes,textIncludedConfirm);
