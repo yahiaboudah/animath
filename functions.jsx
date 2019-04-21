@@ -4,8 +4,8 @@ function getAxisName(){
   var counter = 1;
   var name = "Axis ";
   for(var i=1;i<comp.layers.length+1;i++){
-    if(comp.layer(1).name.indexOf("Axis") != -1){
-      counter += 1;
+    if(comp.layer(i).name.indexOf("Axis") != -1){
+      counter++;
     }
   }
   name = name+counter;
@@ -75,7 +75,8 @@ function Axis(numDashes){
   for(var i=-oneSideDashes;i<=oneSideDashes;i++){
     var name = "Dash "+i;
     dashCreator(mainAxisShape,name);
+  }
+  if(axisType == 'y'){
+    mainAxisShape.transform.rotation.setValue(90);
 }
 }
-
-Axis(21);
