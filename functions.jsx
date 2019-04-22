@@ -211,6 +211,49 @@ function functionPoint(){
   p.transform.position.expression = positionExpression;
 }
 
-//var p = Point(12);
-//yPoint();
-functionPoint();
+function createLine(){
+  var line = app.project.activeItem.layers.addShape();
+  var path = line.content.addProperty("ADBE Vector Shape - Group");
+  line.property("Effects").addProperty("Slider Control");
+  path.path.expression = "var stretch = effect(\"Slider Control\")(\"Slider\")\n"
+  +"createPath(points = [[-stretch,0], [stretch,0]], inTangents = [], outTangents = [], is_closed = true)";
+  var stroke = line.content.addProperty("ADBE Vector Graphic - Stroke");
+  line.name = "line";
+  return line;
+}
+
+function centerAnchorPoint(layer){
+   var comp = app.project.activeItem;
+   var x = layer.sourceRectAtTime(comp.time,false).width/2 + layer.sourceRectAtTime(comp.time,false).left;
+   var y = layer.sourceRectAtTime(comp.time,false).height/2 + layer.sourceRectAtTime(comp.time,false).top;
+   layer.transform.anchorPoint.setValue([x,y]);
+}
+
+function slope(){
+  var slope = createLine();
+  centerAnchorPoint(slope);
+  slope.effect.addProperty("Function Point");
+
+  var positionExpression = "var x = thisLayer.position[0]+960;\n"
+  +"var chosenFunction = thisLayer.effect(\"Function Point\")(\"FunctionLayer\");\n"
+  +"var fx = new Function(\"x\",\"return \"+chosenFunction.name+\";\");\n"
+  +"var xbasis = thisLayer.effect(\"Function Point\")(\"xbasis\");\n"
+  +"var ybasis = thisLayer.effect(\"Function Point\")(\"ybasis\");\n"
+  +"[x,-ybasis*fx((x-960)/xbasis)+540]";
+
+  var rotationExpression = "var h = 0.00001;\n"
+  +"var xposition = thisLayer.position[0];\n"
+  +"var chosenFunction = thisLayer.effect(\"Function Point\")(\"FunctionLayer\");\n"
+  +"var xbasis = thisLayer.effect(\"Function Point\")(\"xbasis\");\n"
+  +"var yabsis = thisLayer.effect(\"Function Point\")(\"ybasis\");\n"
+  +"var fx = new Function(\"x\",\"return \"+chosenFunction.name+\";\");\n"
+  +"var rot = -radiansToDegrees(Math.atan(((fx(((xposition-960)/xbasis)+h)-fx((xposition-960)/xbasis)))/h));\n"
+  +"rot"
+
+  slope.transform.position.expression = positionExpression;
+  slope.transform.rotation.expression = rotationExpression;
+}
+
+function lineWithTwoPoints(){
+    
+}
