@@ -254,6 +254,53 @@ function slope(){
   slope.transform.rotation.expression = rotationExpression;
 }
 
-function lineWithTwoPoints(){
-    
+function extensibleDynamicLine(){
+
+  var shape = app.project.activeItem.layers.addShape();
+  shape.property("Effects").addProperty("Slider Control");
+  var path = shape.content.addProperty("ADBE Vector Shape - Group");
+  shape.content.addProperty('ADBE Vector Graphic - Stroke');
+  var path0 = shape.content.property("ADBE Vector Shape - Group");
+  var pathEx = "";
+  var argName = ["x0","y0","x1","y1"];
+  for(var i=0; i<arguments.length;i++){
+    if(arguments[i] instanceof Array){
+      pathEx += "var "+argName[i]+" = thisComp.layer(\""+arguments[i][0].name+"\").transform.position["+arguments[i][1]+"]-(("+arguments[i][1]+"==0)?960:540);\n";
+      pathEx += ""+argName[i]+" -= thisComp.layer(\""+arguments[i][0].name+"\").transform.anchorPoint["+arguments[i][1]+"];";
+    }else{
+      pathEx += "var "+argName[i]+"="+arguments[i]+";\n";
+    }
 }
+
+  var pathExpression = pathEx
+  +"function getSign(){\n"
+  +"    if(x1-x0 > 0){\n"
+  +"        return -1;\n"
+  +"    }else{\n"
+  +"        return 1;\n"
+  +"  }\n"
+  +"}\n"
+  +"var s = (y1-y0)/(x1-x0);\n"
+  +"var a = effect(\"Slider Control\")(\"Slider\");\n"
+  +"var xadd = getSign()*a/Math.sqrt(1+s*s);\n"
+  +"var yadd = s*xadd;\n"
+  +"createPath(points = [[x0+xadd,y0+yadd],[x1-xadd,y1-yadd]],\n"
+  +"inTangents = [], outTangents = [], is_closed = true)";
+
+  path0.path.expression = pathExpression;
+
+  return shape;
+}
+
+function lineWithTwoPoints(){
+  var selLayers = app.project.activeItem.selectedLayers;
+  if(selLayers.length != 2){
+    alert("Select two layers, please.");
+  }else{
+  var firstPoint = selLayers[0];
+  var secondPoint = selLayers[1];
+  extensibleDynamicLine([firstPoint,0],[firstPoint,1],[secondPoint,0],[secondPoint,1]);
+}
+}
+
+lineWithTwoPoints();
