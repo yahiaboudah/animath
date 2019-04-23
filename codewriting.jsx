@@ -1,6 +1,6 @@
 
 // get the file:
-function getCodeInFile(filepath){
+function getCode(filepath){
   var thePyFile = File(filepath);
   thePyFile.open('r');
   var contents = thePyFile.read();
@@ -8,12 +8,13 @@ function getCodeInFile(filepath){
   return contents;
 }
 // Colorize certain words:
-function addColorizer(textLayer, wordToHighlight, color) {
+function addColorizer(textLayer) {
         var grpTextAnimators = textLayer.property("ADBE Text Properties").property(4);
-
+        alert(grpTextAnimators);
         var grpTextAnimator = grpTextAnimators.addProperty("ADBE Text Animator");
         grpTextAnimator.name = wordToHighlight.toUpperCase();
 
+        /*
         var textSelector = grpTextAnimator.property(1).addProperty("ADBE Text Selector");
         textSelector.property(7).property("ADBE Text Range Units").setValue(2);
         textSelector.property("ADBE Text Index Start").expression = "var wordToHighlight = '" + wordToHighlight + "';\ntext.sourceText.indexOf(wordToHighlight)-2;";
@@ -21,32 +22,52 @@ function addColorizer(textLayer, wordToHighlight, color) {
 
         var fillPropertyGreen = grpTextAnimator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
         fillPropertyGreen.setValue(color);
+        */
 }
 
-function getAnimatorExpression(wordToHighlight){
+function getAnimatorExpression(wordToHighlight,animated){
 
-  var expr = "wordToHighlight = "+wordToHighlight+";"
-  "src = text.sourceText;"
-  "words = src.replace(/^\\s+/,"").split(/\\s+/);"
-  "currWord = words[textIndex-1];"
-  "if(currWord == wordToHighlight){"
-  "indexPos =  text.animator(\"Animator 4\").selector(\"Range Selector 1\").start;"
-  "fIndex = src.indexOf(currWord)+currWord.length;"
-  "if(indexPos >= (100*fIndex/src.length)){"
-  "100"
-  "}else{"
-  "0"
-  "}"
-  "}else{"
-  "    0"
-  "}";
+  var expr = "wordToHighlight = \""+wordToHighlight+"\";\n"
+  +"src = text.sourceText;\n"
+  +"words = src.replace(/^\\s+/,\"\").split(/\\s+/);\n"
+  +"currWord = words[textIndex-1];\n";
+  if(animated){
+    expr = expr+"if(currWord == wordToHighlight){\n"
+    +"indexPos =  text.animator(\"Animator 4\").selector(\"Range Selector 1\").start;\n"
+    +"fIndex = src.indexOf(currWord)+currWord.length;\n"
+    +"if(indexPos >= (100*fIndex/src.length)){\n"
+    +"100\n"
+    +"}else{\n"
+    +"0\n"
+    +"}\n"
+    +"}else{\n"
+    +"    0\n"
+    +"}";
+  }else{
+    expr = expr + "if(currWord == wordToHighlight){\n"
+    +"100}else{0}";
+  }
 
   return expr;
 
 }
 
-var code = getCodeInFile("pyfile.py");
-var txt = app.project.activeItem.layers.addText(code);
-addColorizer(txt,"def",[212,4,78]/255);
-addColorizer(txt,"return",[4,255,134]/255);
-addColorizer(txt,"print",[4,255,134]/255);
+function codeTextLayer(codeStr){
+  var comp = app.project.activeItem;
+  var text = comp.layers.addText(codeStr);
+  return text;
+}
+
+var t = codeTextLayer("hello there hello me bazouka");
+var txtAnims = t.property("ADBE Text Properties").property(4);
+
+// Initialize the text animator:
+var txtAnimator = txtAnims.addProperty("ADBE Text Animator");
+txtAnimator.name = "RETURN";
+// Modify the amount expression:
+var expressionSelector = txtAnimator.property(1).addProperty("ADBE Text Expressible Selector");// Add an expression selector
+expressionSelector.property("Based On").setValue(3); // set to words
+expressionSelector.property("Amount").expression = getAnimatorExpression("hello",false);
+// Add the appropriate fill color:
+var colorSelector = txtAnimator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
+colorSelector.setValue([0, 1, 0.37343749403954, 1]);
