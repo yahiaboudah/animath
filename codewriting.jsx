@@ -26,14 +26,14 @@ function addColorizer(textLayer) {
         */
 }
 
-function getAnimatorExpression(wordToHighlight,animated){
+function getAnimatorExpression(patt,animated){
 
-  var expr = "wordToHighlight = \""+wordToHighlight+"\";\n"
+  var expr = "patt = "+patt+";\n"
   +"src = text.sourceText;\n"
   +"words = src.replace(/^\\s+/,\"\").split(/\\s+/);\n"
   +"currWord = words[textIndex-1];\n";
   if(animated){
-    expr = expr+"if(currWord == wordToHighlight){\n"
+    expr = expr+"if(patt.test(currWord)){\n"
     +"indexPos =  text.animator(\"Animator 4\").selector(\"Range Selector 1\").start;\n"
     +"fIndex = src.indexOf(currWord)+currWord.length;\n"
     +"if(indexPos >= (100*fIndex/src.length)){\n"
@@ -45,7 +45,7 @@ function getAnimatorExpression(wordToHighlight,animated){
     +"    0\n"
     +"}";
   }else{
-    expr = expr + "if(currWord == wordToHighlight){\n"
+    expr = expr + "if(patt.test(currWord)){\n"
     +"100}else{0}";
   }
 
@@ -81,16 +81,13 @@ function codeTextLayer(codeStr){
   var comp = app.project.activeItem;
   var text = comp.layers.addText(codeStr);
   var jsonObj = getSyntaxJSON();
-  for(var i=0;i<1;i++){
+  for(var i=0;i<jsonObj.length;i++){
     var name = jsonObj[i].name;
     var thing = jsonObj[i].thing;
-    thing = eval(thing);
     var color = jsonObj[i].color;
     addAnimatorProp(text,name,thing,color);
   }
   return text;
 }
 
-var t = codeTextLayer("hello there hello me bazouka there");
-// addAnimatorProp(t,"hello","hello",theColor);
-// addAnimatorProp(t,"there","there",anotherColor);
+var t = codeTextLayer("hello() this is function2()");
