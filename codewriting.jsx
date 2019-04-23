@@ -1,3 +1,4 @@
+#include "json2.js";
 
 // get the file:
 function getCode(filepath){
@@ -52,22 +53,44 @@ function getAnimatorExpression(wordToHighlight,animated){
 
 }
 
+function addAnimatorProp(textLayer,animatorName,thingToHighlight,highLightingColor){
+  var txtAnims = textLayer.property("ADBE Text Properties").property(4);
+  var txtAnimator = txtAnims.addProperty("ADBE Text Animator");
+  txtAnimator.name = animatorName;
+
+  // Modify the amount expression:
+  var expressionSelector = txtAnimator.property(1).addProperty("ADBE Text Expressible Selector");// Add an expression selector
+  expressionSelector.property("Based On").setValue(3); // set to words
+  expressionSelector.property("Amount").expression = getAnimatorExpression(thingToHighlight,false); // get expression
+
+  // Add the appropriate fill color:
+  var colorSelector = txtAnimator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
+  colorSelector.setValue(highLightingColor);
+}
+
+function getSyntaxJSON(){
+  var jsonFile = File("syntax.json");
+  jsonFile.open('r');
+  jsonContent = jsonFile.read();
+  jsonFile.close();
+  var jsonObj = JSON.parse(jsonContent);
+  return jsonObj;
+}
+
 function codeTextLayer(codeStr){
   var comp = app.project.activeItem;
   var text = comp.layers.addText(codeStr);
+  var jsonObj = getSyntaxJSON();
+  for(var i=0;i<1;i++){
+    var name = jsonObj[i].name;
+    var thing = jsonObj[i].thing;
+    thing = eval(thing);
+    var color = jsonObj[i].color;
+    addAnimatorProp(text,name,thing,color);
+  }
   return text;
 }
 
-var t = codeTextLayer("hello there hello me bazouka");
-var txtAnims = t.property("ADBE Text Properties").property(4);
-
-// Initialize the text animator:
-var txtAnimator = txtAnims.addProperty("ADBE Text Animator");
-txtAnimator.name = "RETURN";
-// Modify the amount expression:
-var expressionSelector = txtAnimator.property(1).addProperty("ADBE Text Expressible Selector");// Add an expression selector
-expressionSelector.property("Based On").setValue(3); // set to words
-expressionSelector.property("Amount").expression = getAnimatorExpression("hello",false);
-// Add the appropriate fill color:
-var colorSelector = txtAnimator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
-colorSelector.setValue([0, 1, 0.37343749403954, 1]);
+var t = codeTextLayer("hello there hello me bazouka there");
+// addAnimatorProp(t,"hello","hello",theColor);
+// addAnimatorProp(t,"there","there",anotherColor);
