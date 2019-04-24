@@ -27,8 +27,7 @@ function addAnimatorProp(txtAnimator,animatorName,start,end,highLightingColor){
   var expressionSelector = txtAnimator.property("Selectors").addProperty("ADBE Text Selector");// Add an expression selector
   expressionSelector.name ="Rangooo";
   app.project.item(1).layer(1).property("ADBE Text Properties").property("ADBE Text Animators").property(1).property("ADBE Text Selectors").property(1).property("ADBE Text Range Advanced").property("ADBE Text Range Units").setValue(2);
-  //expressionSelector.property("Advanced").property("Based On").setValue(1);
-  expressionSelector.property("ADBE Text Index Start")setValue(start);
+  expressionSelector.property("ADBE Text Index Start").setValue(start);
   expressionSelector.property("ADBE Text Index End").setValue(end);
 
   // Add the appropriate fill color:
@@ -83,12 +82,6 @@ function codeTextLayer(codeStr){
     var replacepattern = eval(jsonObj[i].replacepattern);
     var color = jsonObj[i].color;
     var points = getPoints(codeStr,pattern,replacepattern);
-    //testPoints(codeStr,points);
-    // alert("layer test");
-    // var ttt = text.property("Text").property("Source Text").value.toString();
-    // alert(typeof(ttt));
-    // testPoints(ttt,points);
-    // var expression = getExpression(points);
     for(var k=0;k<points.length;k++){
       addAnimatorProp(txtAnimator,name,points[i][0],points[i][1],color);
     }
@@ -96,5 +89,13 @@ function codeTextLayer(codeStr){
   return text;
 }
 
-var c = getCode("pyfile.py");
-var t = codeTextLayer(c);
+var c = getCode("plain1.txt");
+var t = app.project.activeItem.layers.addText(c);
+t.name = "a";
+var tt = t.Text.sourceText.value.toString();
+
+for(var i=0;i<tt.length;i++){
+  if(tt[i] != c[i]){
+    alert("Pos: "+i+"\nFileStr:");
+  }
+}
