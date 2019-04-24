@@ -26,30 +26,8 @@ function addColorizer(textLayer) {
         */
 }
 
-function getAnimatorExpression(patt,animated){
 
-  var expr = "patt = "+patt+";\n"
-  +"src = text.sourceText;\n"
-  +"words = src.replace(/^\\s+/,\"\").split(/\\s+/);\n"
-  +"currWord = words[textIndex-1];\n";
-  if(animated){
-    expr = expr+"if(patt.test(currWord)){\n"
-    +"indexPos =  text.animator(\"Animator 4\").selector(\"Range Selector 1\").start;\n"
-    +"fIndex = src.indexOf(currWord)+currWord.length;\n"
-    +"if(indexPos >= (100*fIndex/src.length)){\n"
-    +"100\n"
-    +"}else{\n"
-    +"0\n"
-    +"}\n"
-    +"}else{\n"
-    +"    0\n"
-    +"}";
-  }else{
-    expr = expr + "if(patt.test(currWord)){\n"
-    +"100}else{0}";
-  }
-
-  return expr;
+function getExpression(){
 
 }
 
@@ -90,4 +68,4 @@ function codeTextLayer(codeStr){
   return text;
 }
 
-var t = codeTextLayer("hello() this is function2()");
+var t = codeTextLayer("hello() this is function2() for import as in return me this");
