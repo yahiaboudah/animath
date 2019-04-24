@@ -8,27 +8,17 @@ function getCode(filepath){
   thePyFile.close();
   return contents;
 }
-// Colorize certain words:
-function addColorizer(textLayer) {
-        var grpTextAnimators = textLayer.property("ADBE Text Properties").property(4);
-        alert(grpTextAnimators);
-        var grpTextAnimator = grpTextAnimators.addProperty("ADBE Text Animator");
-        grpTextAnimator.name = wordToHighlight.toUpperCase();
 
-        /*
-        var textSelector = grpTextAnimator.property(1).addProperty("ADBE Text Selector");
-        textSelector.property(7).property("ADBE Text Range Units").setValue(2);
-        textSelector.property("ADBE Text Index Start").expression = "var wordToHighlight = '" + wordToHighlight + "';\ntext.sourceText.indexOf(wordToHighlight)-2;";
-        textSelector.property("ADBE Text Index End").expression = "var wordToHighlight = '" + wordToHighlight + "';\ntext.sourceText.indexOf(wordToHighlight) + wordToHighlight.length-2;";
+function getRanges(codeStr){
 
-        var fillPropertyGreen = grpTextAnimator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
-        fillPropertyGreen.setValue(color);
-        */
 }
 
-
 function getExpression(){
-
+  var expr = "i = textIndex;\n"
+  +"if(\n"
+  + getRanges();
+  +"0){100}else{0}";
+  return expr;
 }
 
 function addAnimatorProp(textLayer,animatorName,thingToHighlight,highLightingColor){
@@ -68,4 +58,49 @@ function codeTextLayer(codeStr){
   return text;
 }
 
-var t = codeTextLayer("hello() this is function2() for import as in return me this");
+function getSyntaxJSON(){
+  var jsonFile = File("syntax.json");
+  jsonFile.open('r');
+  jsonContent = jsonFile.read();
+  jsonFile.close();
+  var jsonObj = JSON.parse(jsonContent);
+  return jsonObj;
+}
+
+function getPoints(text,patt,replacepatt){
+    var points = [];
+    var counter = 0;
+    var tempStr = "";
+    while(match = patt.exec(text) != null){
+      fi = match.index;
+      li = patt.lastIndex;
+      tempStr = text.substring(fi,li).replace(replacepatt,"");
+      points[counter] = [];
+      points[counter][0] = fi;
+      points[counter][1] = fi + tempStr.length;
+      counter++
+    }
+    return points;
+}
+
+function testPoints(text,p){
+  var str1 = "";
+  for(var i=0;i<p.length;i++){
+    str1 = text.substring(points[i][0],points[i][1]);
+    alert(str1);
+  }
+}
+
+var text = py();
+var j = getSyntaxJSON();
+for(var i= 0;i<){
+  var pattern = eval(j[0].pattern);
+  var replacepattern = eval(j[0].replacepattern);
+
+  var p = getPoints(text,functionPatt,replacepatt);
+}
+
+
+
+
+//var t = codeTextLayer("hello() this is function2() for import as in return me this");
