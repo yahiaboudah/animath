@@ -4,5 +4,29 @@
     "pattern":"/[A-Za-z0-9_]+\\s*\\(/gm",
     "replacepattern":"/\\s*\\(/",
     "color": [0,1,0.5,1]
+  },
+  {
+    "name":"BOOL",
+    "pattern":"/[^a-zA-Z0-9_\\\"](True|False)[^a-zA-Z_0-9\\\"]/g",
+    "replacepattern":"/\\,/",
+    "color": [1,0.117647059,0.117647059,1]
+  },
+  {
+    "name":"KEYWORDS",
+    "pattern":"/\\s+(pass|else|not|for|if|while|break|as|import|return)\\W/g",
+    "replacepattern":"/\\,/",
+    "color": [0,0.588,1,1]
+  },
+  {
+    "name":"NUMS",
+    "pattern":"/\\d/g",
+    "replacepattern":"/a^/",
+    "color":[0.952941176,0.0980392157,0.031372549,1]
+  },
+  {
+    "name":"STRING",
+    "pattern":"/[\\'][^\\']*[\\']/g",
+    "replacepattern":"/a^/",
+    "color":[0.75294117647,0.75294117647,0.75294117647,1]
   }
 ]
