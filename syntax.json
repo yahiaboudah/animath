@@ -1,19 +1,8 @@
 [
   {
-    "name":"name",
-    "thing":"/\\s+the/g",
+    "name":"FUNCTIONS",
+    "pattern":"/[A-Za-z0-9_]+\\s*\\(/gm",
+    "replacepattern":"/\\s*\\(/",
     "color": [0,1,0.5,1]
-  },
-  {
-
-  },
-  {
-
-  },
-  {
-
-  },
-  {
-
   }
 ]
