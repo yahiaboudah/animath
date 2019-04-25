@@ -52,7 +52,7 @@ function getPoints(text,patt,replacepatt){
       li = patt.lastIndex;
       tempStr = text.substring(fi,li).replace(replacepatt,"");
       points[counter] = [];
-      points[counter][0] = fi;
+      points[counter][0] = fi+1;
       points[counter][1] = fi + tempStr.length;
       counter++;
     }
@@ -72,20 +72,20 @@ function codeTextLayer(codeStr){
   var text = comp.layers.addText(codeStr);
   var src = text.Text.sourceText.value.toString();
   src = src.replace(/^/gm," ");
-  txto.Text.sourceText.setValue(src);
+  text.Text.sourceText.setValue(src);
   text.name = "a";
-  var txtAnims = text.property("ADBE Text Properties").property(4);
-  var txtAnimator = txtAnims.addProperty("ADBE Text Animator");
-
   var jsonObj = getSyntaxJSON();
+
   for(var i=0;i<jsonObj.length;i++){
+    var txtAnims = text.property("ADBE Text Properties").property(4);
+    var txtAnimator = txtAnims.addProperty("ADBE Text Animator");
     var name = jsonObj[i].name;
     var pattern = eval(jsonObj[i].pattern);
     var replacepattern = eval(jsonObj[i].replacepattern);
     var color = jsonObj[i].color;
     var points = getPoints(codeStr,pattern,replacepattern);
     var expression = getExpression(points);
-      addAnimatorProp(txtAnimator,name,expression,color);
+    addAnimatorProp(txtAnimator,name,expression,color);
   }
   return text;
 }
