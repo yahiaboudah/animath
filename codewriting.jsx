@@ -4,13 +4,13 @@
 function getCode(filepath){
   var thePyFile = File(filepath);
   thePyFile.open('r');
-  var contents = thePyFile.read();
+  contents = thePyFile.read();
   thePyFile.close();
   return contents;
 }
 
 function getExpression(points){
-  var expr = "i = textIndex;\n"
+  var expr = "var i = textIndex-1;\n"
   +"if(\n";
   for(var i=0;i<points.length;i++){
     expr += "("+points[i][0]+" <= i && i <= "+points[i][1]+") ||\n";
@@ -19,17 +19,16 @@ function getExpression(points){
   return expr;
 }
 
-function addAnimatorProp(txtAnimator,animatorName,start,end,highLightingColor){
+function addAnimatorProp(txtAnimator,animatorName,animExpression,highLightingColor){
 
   txtAnimator.name = animatorName;
 
   // Modify the amount expression:
-  var expressionSelector = txtAnimator.property("Selectors").addProperty("ADBE Text Selector");// Add an expression selector
+  var expressionSelector = txtAnimator.property("Selectors").addProperty("ADBE Text Expressible Selector");// Add an expression selector
   expressionSelector.name ="Rangooo";
-  app.project.item(1).layer(1).property("ADBE Text Properties").property("ADBE Text Animators").property(1).property("ADBE Text Selectors").property(1).property("ADBE Text Range Advanced").property("ADBE Text Range Units").setValue(2);
-  expressionSelector.property("ADBE Text Index Start").setValue(start);
-  expressionSelector.property("ADBE Text Index End").setValue(end);
 
+  expressionSelector.property("Based On").setValue(1); // set to chars
+  expressionSelector.property("Amount").expression = animExpression; // get expression
   // Add the appropriate fill color:
   var colorSelector = txtAnimator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
   colorSelector.setValue(highLightingColor);
@@ -48,7 +47,6 @@ function getPoints(text,patt,replacepatt){
     var points = [];
     var counter = 0;
     var tempStr = "";
-    var str1 = "";
     while((match = patt.exec(text)) != null){
       fi = match.index;
       li = patt.lastIndex;
@@ -72,9 +70,13 @@ function testPoints(text,p){
 function codeTextLayer(codeStr){
   var comp = app.project.activeItem;
   var text = comp.layers.addText(codeStr);
+  var src = text.Text.sourceText.value.toString();
+  src = src.replace(/^/gm," ");
+  txto.Text.sourceText.setValue(src);
   text.name = "a";
   var txtAnims = text.property("ADBE Text Properties").property(4);
   var txtAnimator = txtAnims.addProperty("ADBE Text Animator");
+
   var jsonObj = getSyntaxJSON();
   for(var i=0;i<jsonObj.length;i++){
     var name = jsonObj[i].name;
@@ -82,20 +84,12 @@ function codeTextLayer(codeStr){
     var replacepattern = eval(jsonObj[i].replacepattern);
     var color = jsonObj[i].color;
     var points = getPoints(codeStr,pattern,replacepattern);
-    for(var k=0;k<points.length;k++){
-      addAnimatorProp(txtAnimator,name,points[i][0],points[i][1],color);
-    }
+    var expression = getExpression(points);
+      addAnimatorProp(txtAnimator,name,expression,color);
   }
   return text;
 }
 
-var c = getCode("plain1.txt");
-var t = app.project.activeItem.layers.addText(c);
-t.name = "a";
-var tt = t.Text.sourceText.value.toString();
 
-for(var i=0;i<tt.length;i++){
-  if(tt[i] != c[i]){
-    alert("Pos: "+i+"\nFileStr:");
-  }
-}
+var ac = getCode("pyfile.py");
+var txto = codeTextLayer(ac);
