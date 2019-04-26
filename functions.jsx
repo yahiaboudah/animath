@@ -178,6 +178,7 @@ function getLayerWithComment(comment){
 function yPoint(){
   var functionLayer = app.project.activeItem.selectedLayers[0];
   var p = Point(12);
+  p.name = "ypoint";
   var xpoint = getLayerWithComment('xpoint');
   var xline = getLayerWithComment('x');
   var yline = getLayerWithComment('y');
@@ -191,7 +192,7 @@ function yPoint(){
   var ybasis = dashSpacing * oneEvery;
 
   p.transform.position.expression = "function theFunction(x){\n"
-  +"    return "+functionLayer.name+";\n"
+  +"    return "+functionLayer.comment.split(" ")[1]+";\n"
   +"}"
   +"var xbasis = "+xbasis+";\n"
   +"var ybasis = "+ybasis+";\n"
@@ -303,4 +304,12 @@ function lineWithTwoPoints(){
 }
 }
 
-lineWithTwoPoints();
+/*
+axis(21);
+axis(21);
+grid(21);
+Point(12);
+functionPoint();
+*/
+
+yPoint();

@@ -3,7 +3,7 @@ selLayersArr = [];
 
 win=new Window("palette","mathScript",[0,0,250,460],{resizeable:true,});
 getEquationPanel=win.add("panel",[20,20,220,170],"Get Expression");
-getExpressionEditText=getEquationPanel.add("edittext",[20,27,182,69] ,"x",{readonly:0,noecho:0,borderless:0,multiline:0,enterKeySignalsOnChange:0});
+getExpressionEditText=getEquationPanel.add("edittext",[20,27,182,69] ,"x",{readonly:0,noecho:0,borderless:0,multiline:1,enterKeySignalsOnChange:0});
 getItButton=getEquationPanel.add("button",[43,75,163,105],"GET IT!");
 graphExpressionPanel=win.add("panel",[20,173,220,437],"Graph Expression");
 createGridButton=graphExpressionPanel.add("button",[21,15,113,49],"Create Grid");
@@ -51,8 +51,7 @@ function getEquationButtonClicked(){
     alert("Illustrator is not launched");
   }else{
   var eqStr0 = getExpressionEditText.text;
-  var eqStr2 = eqStr0.replaceAll(" ","%20");
-  var eqStr = eqStr2.replaceAll("^","^^");
+  var eqStr = eqStr0;
   var myCommand = "cd C:\\wget & wget -O x.png http://latex.codecogs.com/png.latex?\\dpi{300}%20\\huge%20"+ eqStr;
   system.callSystem("cmd /c \"" + myCommand + "\"");
   var file = new File("C:\\wget\\x.png");
@@ -215,7 +214,7 @@ for(var i =0;i<length;i++){
  path.path.setValue(shape);
  addStroke(shapeLayer,5);
  shapeLayer.name = functionText;
- shapeLayer.comment = functionText;
+ shapeLayer.comment = "f: "+functionText;
  return shapeLayer;
 }
 

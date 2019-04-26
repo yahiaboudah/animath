@@ -6,8 +6,14 @@
     "color": [0,1,0.5,1]
   },
   {
+    "name":"DEF",
+    "pattern":"/def\\s+/g",
+    "replacepattern":"/\\s+/",
+    "color":[0.91372549019,0,0.33725490196,1]
+  },
+  {
     "name":"BOOL",
-    "pattern":"/[^a-zA-Z0-9_\\\"](True|False)[^a-zA-Z_0-9\\\"]/g",
+    "pattern":"/[^a-zA-Z0-9_\\\"\\(](True|False)[^a-zA-Z_0-9\\\"\\)]/g",
     "replacepattern":"/\\,/",
     "color": [1,0.117647059,0.117647059,1]
   },
