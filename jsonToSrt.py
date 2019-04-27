@@ -29,10 +29,6 @@ def write_srt(name,contents):
     with open(name,'w') as f:
         f.write(contents)
 
-def get_name(json_obj):
-    name = json_obj[0]['Title'] + '.srt'
-    return name
-
 
 j = import_json(SCENE_PATH+SCENE_NAME+'.json')
 srtobj = get_srt(j)
