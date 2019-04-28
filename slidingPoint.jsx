@@ -11,25 +11,25 @@ var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
 var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-alert("Some shit here");
+alert("Test here");
 
 var now2 = new Date().getTime();
 
-alert(now2-now);
+alert((now2-now)/1000);
 
-seco = seconds;
-var i =12;
-while(i>0){
-  alert(seco);
-  i--;
-}
 
 function pointClicked(){
-
+  // How to detect actions in after effects: Once clicked
+  while(true){
+    if(pointClicked){
+      var pointClickedTime = getCurrTime();
+      break;
+    }
+  }
   return pointClickedTime;
 }
 
 function getCurrTime(){
-
+  var currTimeInSeconds = new Date().getTime() / 1000;
   return currTimeInSeconds;
 }
