@@ -1,35 +1,66 @@
-#targetengine seco
-seco = 0;
+#include "json2.js";
+#targetengine allPoints
+slidingPoints = []
 
-// Set the date we're counting down to
-var countDownDate = new Date("Jan 5, 2021 15:37:25").getTime();
-var now = new Date().getTime();
-var distance = countDownDate - now;
+NULL_LAYER_COMMENT = "thisispointcollectionnulllayer";
+DEFAULT_PATH = "C:/Users/HP/Desktop/Banana61/00Videos/"
 
-var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+var w = new Window ("palette","Point recorder");
+var startSession = w.add("button",undefined,"&Ctart");
+var store = w.add("button",undefined,"&Store");
+var endSession = w.add("button",undefined,"&End");
+store.shortcutKey = "o";
+w.show();
 
-alert("Test here");
-
-var now2 = new Date().getTime();
-
-alert((now2-now)/1000);
-
-
-function pointClicked(){
-  // How to detect actions in after effects: Once clicked
-  while(true){
-    if(pointClicked){
-      var pointClickedTime = getCurrTime();
-      break;
-    }
-  }
-  return pointClickedTime;
+function createNull(){
+  var comp = app.project.activeItem;
+  var nullLayer = comp.layers.addNull();
+  nullLayer.property("Effects").addProperty("Point Control");
+  nullLayer.comment = NULL_LAYER_COMMENT;
+  return nullLayer;
 }
 
-function getCurrTime(){
-  var currTimeInSeconds = new Date().getTime() / 1000;
-  return currTimeInSeconds;
+function addPoint(layer,pointCollection){
+  var point = layer.property("Effects").property("Point Control").property("Point");
+  var lengtho = pointCollection.length;
+  pointCollection[lengtho] = [];
+  pointCollection[lengtho] = point.value;
+}
+
+function getNullLayer(){
+  var comp = app.project.activeItem;
+  for(var i=1;i<comp.layers.length;i++){
+    if(comp.layer(i).comment == NULL_LAYER_COMMENT){
+      return comp.layer(i);
+    }
+  }
+}
+
+function writeToJSON(arr,chosenName){
+  if(chosenName == ""){
+    chosenName = "defaultName";
+  }
+  var file = new File(DEFAULT_PATH+chosenName+".json");
+  file.open('w');
+  j = JSON.stringify(arr);
+  file.write(j);
+  file.close();
+}
+
+startSession.onClick = function(){
+  var layer = createNull();
+}
+
+store.onClick = function(){
+  var selLayer = app.project.activeItem.selectedLayers[0];
+  if(selLayer.comment != NULL_LAYER_COMMENT){
+    selLayer = getNullLayer();
+  }
+  addPoint(selLayer,slidingPoints);
+}
+
+endSession.onClick = function(){
+  var p = prompt("Enter the name of the file:");
+  writeToJSON(slidingPoints,p);
+  alert("point array saved!");
 }
