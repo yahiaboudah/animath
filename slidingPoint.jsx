@@ -3,7 +3,7 @@
 slidingPoints = []
 
 NULL_LAYER_COMMENT = "thisispointcollectionnulllayer";
-DEFAULT_PATH = "C:/Users/HP/Desktop/Banana61/00Videos/"
+DEFAULT_PATH = "C:/Users/HP/Desktop/math animation'/Scripts/SlidingPoints";
 
 var w = new Window ("palette","Point recorder");
 var startSession = w.add("button",undefined,"&Ctart");
@@ -47,6 +47,16 @@ function writeToJSON(arr,chosenName){
   file.close();
 }
 
+function getPoints(filepath){
+  var file = openDlg(filepath);
+  file.open('r');
+  contents = file.read();
+  file.close();
+  var arr = JSON.parse(contents);
+  return arr;
+}
+
+
 startSession.onClick = function(){
   var layer = createNull();
 }
@@ -62,5 +72,8 @@ store.onClick = function(){
 endSession.onClick = function(){
   var p = prompt("Enter the name of the file:");
   writeToJSON(slidingPoints,p);
+  alert(slidingPoints);
   alert("point array saved!");
+  var a = getPoints(DEFAULT_PATH+p+'.json');
+  alert(a);
 }
