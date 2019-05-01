@@ -6,11 +6,11 @@ NULL_LAYER_COMMENT = "thisispointcollectionnulllayer";
 DEFAULT_PATH = "C:/Users/HP/Desktop/math animation'/Scripts/SlidingPoints/";
 
 var w = new Window ("palette","Point recorder");
-var startSession = w.add("button",undefined,"Start");
+var startSession = w.add("button",undefined,"start");
 var store = w.add("button",undefined,"&Store");
-store.shortcutKey = "s";
+store.shortcutKey = "S";
 var endSession = w.add("button",undefined,"End");
-var slideIt = w.add("button",undefined,"Slide");
+var slideIt = w.add("button",undefined,"slide");
 w.show();
 
 function createNull(){
@@ -57,16 +57,19 @@ function getPoints(filepath){
   return arr;
 }
 
-function makeSliding(layer,points){
+function makeSliding(layer,points,waitingTime,slidingTime){
   var comp = app.project.activeItem;
   var currTime = comp.time;
-  var waitingTime = 2;
-  var slidingTime = 1;
+  var timenow = currTime;
   layer.transform.position.setValueAtTime(currTime,points[0]);
+  layer.transform.position.setValueAtTime(currTime+waitingTime,points[0]);
+  timenow = currTime+waitingTime;
   for(var i=1;i<points.length;i++){
-    layer.transform.position.setValueAtTime(currTime+i*slidingTime,points[i]);
-    layer.transform.position.setValueAtTime(currTime+i*(waitingTime+slidingTime),points[i]);
+    layer.transform.position.setValueAtTime(timenow+slidingTime,points[i]);
+    layer.transform.position.setValueAtTime(timenow+slidingTime+waitingTime,points[i]);
+    timenow += (slidingTime + waitingTime);
   }
+  layer.transform.position.expression = "arr = transform.position; [arr[0]+960,arr[1]+540]";
 }
 
 function getMostRecent(){
@@ -109,12 +112,16 @@ slideIt.onClick = function(){
   var most_recent = getMostRecent();
   var pathOfSlid = (new File(most_recent)).openDlg("Pick a sliding json","JSON:*.json");
   var po = getPoints(pathOfSlid);
+  app.beginUndoGroup("Begin Sliding");
   var sel = app.project.activeItem.selectedLayers;
   if(sel.length != 1){
     alert("Select one layer and try again!");
   }else{
-    app.beginUndoGroup("Begin Sliding");
-    makeSliding(sel,po);
-    app.endUndoGroup();
+    var waitingTime = prompt("Enter the waiting time",2);
+    waitingTime = parseFloat(waitingTime);
+    var slidingTime = prompt("Enter the sliding time",1);
+    slidingTime = parseFloat(slidingTime);
+    makeSliding(sel[0],po,waitingTime,slidingTime);
   }
+  app.endUndoGroup();
 }
