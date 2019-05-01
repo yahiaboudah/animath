@@ -3,13 +3,14 @@
 slidingPoints = []
 
 NULL_LAYER_COMMENT = "thisispointcollectionnulllayer";
-DEFAULT_PATH = "C:/Users/HP/Desktop/math animation'/Scripts/SlidingPoints";
+DEFAULT_PATH = "C:/Users/HP/Desktop/math animation'/Scripts/SlidingPoints/";
 
 var w = new Window ("palette","Point recorder");
-var startSession = w.add("button",undefined,"&Ctart");
+var startSession = w.add("button",undefined,"Start");
 var store = w.add("button",undefined,"&Store");
-var endSession = w.add("button",undefined,"&End");
-store.shortcutKey = "o";
+store.shortcutKey = "s";
+var endSession = w.add("button",undefined,"End");
+var slideIt = w.add("button",undefined,"Slide");
 w.show();
 
 function createNull(){
@@ -48,14 +49,42 @@ function writeToJSON(arr,chosenName){
 }
 
 function getPoints(filepath){
-  var file = openDlg(filepath);
+  var file = File(filepath);
   file.open('r');
-  contents = file.read();
+  var contents = file.read();
   file.close();
   var arr = JSON.parse(contents);
   return arr;
 }
 
+function makeSliding(layer,points){
+  var comp = app.project.activeItem;
+  var currTime = comp.time;
+  var waitingTime = 2;
+  var slidingTime = 1;
+  layer.transform.position.setValueAtTime(currTime,points[0]);
+  for(var i=1;i<points.length;i++){
+    layer.transform.position.setValueAtTime(currTime+i*slidingTime,points[i]);
+    layer.transform.position.setValueAtTime(currTime+i*(waitingTime+slidingTime),points[i]);
+  }
+}
+
+function getMostRecent(){
+  var folder = Folder(DEFAULT_PATH);
+  var files = folder.getFiles("*.json");
+  if(files.length == 0){
+    return 0;
+  }
+  var mostRecent = files[0];
+  if(files.length > 1){
+    for(var i=1;i<files.length;i++){
+      if( files[i].modified > mostRecent.modified){
+        mostRecent = files[i];
+    }
+  }
+}
+  return mostRecent;
+}
 
 startSession.onClick = function(){
   var layer = createNull();
@@ -72,8 +101,20 @@ store.onClick = function(){
 endSession.onClick = function(){
   var p = prompt("Enter the name of the file:");
   writeToJSON(slidingPoints,p);
-  alert(slidingPoints);
   alert("point array saved!");
   var a = getPoints(DEFAULT_PATH+p+'.json');
-  alert(a);
+}
+
+slideIt.onClick = function(){
+  var most_recent = getMostRecent();
+  var pathOfSlid = (new File(most_recent)).openDlg("Pick a sliding json","JSON:*.json");
+  var po = getPoints(pathOfSlid);
+  var sel = app.project.activeItem.selectedLayers;
+  if(sel.length != 1){
+    alert("Select one layer and try again!");
+  }else{
+    app.beginUndoGroup("Begin Sliding");
+    makeSliding(sel,po);
+    app.endUndoGroup();
+  }
 }
