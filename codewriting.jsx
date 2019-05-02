@@ -90,6 +90,53 @@ function codeTextLayer(codeStr){
   return text;
 }
 
+function output(input){
+  tempFile = new File("C:/Users/HP/tempforexec.py");
+  tempFile.open('w');
+  tempFile.write(contents);
+  tempFile.close();
+  output = system.callSystem("python C:/Users/HP/tempforexec.py");
+  tempFile.remove();
+  return output;
+}
 
-var ac = getCode("pyfile.py");
-var txto = codeTextLayer(ac);
+function outputBox(){
+  var box = app.project.activeItem.layers.addShape();
+  var con = box.property("Contents");
+  var rect = con.addProperty("ADBE Vector Shape - Rect");
+  var size = rect.property("Size");
+  size.setValue([924,924]);
+  var roundedness = rect.property("ADBE Vector Rect Roundness");
+  roundedness.setValue(45);
+  var fill = con.addProperty("ADBE Vector Graphic - Fill");
+  fill.property("Color").setValue([1,1,1,1]);
+  return box;
+}
+
+function outputText(parentLayer,outputHere){
+  var txt = app.project.activeItem.layers.addText(outputHere);
+  txt.parent = parentLayer;
+  srcRect = parentLayer.sourceRectAtTime(0,false);
+  txt.transform.position.setValue([srcRect.left+50,srcRect.top+55]);
+  return txt;
+}
+
+function modifyText(textLayer,fontSize,font,fill,fontStyle){
+  var textProp = textLayer.property("Source Text");
+  var textDocument = textProp.value;
+  textDocument.applyFill = true;
+  textDocument.fontSize = fontSize;
+  textDocument.font = font;
+  textDocument.fillColor = fill;
+  textProp.setValue(textDocument);
+}
+
+var code = getCode("tst.py");
+var text = codeTextLayer(code);
+modifyText(text,50,"DejaVuSansMono",[1,1,1]);
+text.transform.position.setValue([200,200]);
+
+box = outputBox();
+box.transform.position.setValue([1350,540]);
+t = outputText(box,output(code));
+modifyText(t,45,"DejaVuSansMono",[0,0,0]);

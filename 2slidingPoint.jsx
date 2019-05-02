@@ -1,5 +1,5 @@
 #include "json2.js";
-#targetengine allPoints
+#targetengine slidingPoints
 slidingPoints = []
 
 NULL_LAYER_COMMENT = "thisispointcollectionnulllayer";
