@@ -3,10 +3,10 @@ intervals = [];
 var comp = app.project.activeItem;
 
 SAVE_AS_FRAME_ID = 2104;
-STATIC_IMAGE_PATH = "C:/Users/HP/Desktop/Banana61/00Videos/Proxies/StaticImages/";
-folder = Folder(STATIC_IMAGE_PATH);
+STATIC_IMAGES_PATH = "C:/Users/HP/Desktop/Banana61/00Videos/Proxies/StaticImages/";
+folder = Folder(STATIC_IMAGES_PATH);
 numFiles = folder.getFiles().length;
-FILE_NAME = "staticimage"+numFiles+".png";
+STATIC_IMAGE_PATH = STATIC_IMAGES_PATH+"staticimage"+numFiles+".png";
 
 function getSoloLayer(){
   var comp = app.project.activeItem;
@@ -30,26 +30,32 @@ function getInterval(){
 
 function splitLayer(layer,timeInterval,compDuration){
   if(timeInterval.start == 0){
+    app.beginUndoGroup("Split Layers");
     layer.inPoint = timeInterval.end;
     layer.outPoint = compDuration;
+    app.endUndoGroup();
   }else if(timeInterval.end == compDuration){
+    app.beginUndoGroup("Split Layers");
     layer.inPoint = 0;
     layer.outPoint = timeInterval.start;
+    app.endUndoGroup();
   }else{
+    app.beginUndoGroup("Split Layers");
     leftLayer = layer.duplicate();
     leftLayer.outPoint = timeInterval.start;
     layer.inPoint = timeInterval.end;
+    app.endUndoGroup();
   }
 }
 
-function getSnapshot(fileName,snapTime){
+function getSnapshot(snapTime){
   var comp = app.project.activeItem;
   comp.time = snapTime;
   app.executeCommand(SAVE_AS_FRAME_ID);
   app.project.renderQueue.showWindow(false);
   num = app.project.renderQueue.numItems;
   app.project.renderQueue.item(num).outputModule(1).applyTemplate("SnapShotSettings");
-  app.project.renderQueue.item(num).outputModule(1).file = new File(STATIC_IMAGE_PATH+fileName);
+  app.project.renderQueue.item(num).outputModule(1).file = new File(STATIC_IMAGE_PATH);
   app.project.renderQueue.render();
   app.project.renderQueue.showWindow(false);
 }
@@ -67,8 +73,8 @@ function clearQueue(){
   }
 }
 
-function dropSnapshot(fileName,interval){
-  var importedFile = File(STATIC_IMAGE_PATH+fileName);
+function dropSnapshot(interval){
+  var importedFile = File(STATIC_IMAGE_PATH);
   var importOptions = new ImportOptions();
   importOptions.file = importedFile;
   importOptions.importAs = ImportAsType.FOOTAGE;
@@ -79,18 +85,16 @@ function dropSnapshot(fileName,interval){
   snap.outPoint = interval.end;
 }
 
-app.beginUndoGroup("Begin This Thing For Me Right Now Now NOw!!");
 // Get the layer:
 theLayer = getSoloLayer();
 // Get the interval:
 timeInterval = getInterval();
+// Get the Shot:
+getSnapshot(timeInterval.start);
 // Split the Original Layer:
 splitLayer(theLayer,timeInterval,comp.duration);
-// Get the Shot:
-clearQueue();
-getSnapshot(FILE_NAME,timeInterval.start);
 // Drop the Shot:
-dropSnapshot(FILE_NAME,timeInterval);
-clearQueue();
-
+app.beginUndoGroup("Drop Shot");
+dropSnapshot(timeInterval);
 app.endUndoGroup();
+// clearQueue();
