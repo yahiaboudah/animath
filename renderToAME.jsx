@@ -1,11 +1,12 @@
 #targetengine intervals
 intervals = [];
 var comp = app.project.activeItem;
+
 SAVE_AS_FRAME_ID = 2104;
 STATIC_IMAGE_PATH = "C:/Users/HP/Desktop/Banana61/00Videos/Proxies/StaticImages/";
 folder = Folder(STATIC_IMAGE_PATH);
 numFiles = folder.getFiles().length;
-FILE_NAME = "staticimage"+numFiles;
+FILE_NAME = "staticimage"+numFiles+".png";
 
 function getSoloLayer(){
   var comp = app.project.activeItem;
@@ -29,15 +30,9 @@ function getInterval(){
 
 function splitLayer(layer,timeInterval,compDuration){
   if(timeInterval.start == 0){
-    begLayer = layer.duplicate();
-    begLayer.inPoint = 0;
-    begLayer.outPoint = timeInterval.end;
     layer.inPoint = timeInterval.end;
     layer.outPoint = compDuration;
   }else if(timeInterval.end == compDuration){
-    endLayer = layer.duplicate();
-    endLayer.inPoint = timeInterval.start;
-    endLayer.outPoint = compDuration;
     layer.inPoint = 0;
     layer.outPoint = timeInterval.start;
   }else{
@@ -84,7 +79,7 @@ function dropSnapshot(fileName,interval){
   snap.outPoint = interval.end;
 }
 
-app.beginUndoGroup("Begin This");
+app.beginUndoGroup("Begin This Thing For Me Right Now Now NOw!!");
 // Get the layer:
 theLayer = getSoloLayer();
 // Get the interval:
