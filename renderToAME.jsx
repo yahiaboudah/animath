@@ -56,9 +56,7 @@ function splitLayers(layers,timeInterval,compDuration){
   }else if(timeInterval.end == compDuration){
     app.beginUndoGroup("Split Layers");
     for(var i=0;i<layers.length;i++){
-      alert("Here");
     layers[i].outPoint = timeInterval.start;
-    alert("Finished");
   }
     app.endUndoGroup();
   }else{
@@ -101,7 +99,25 @@ function dropSnapshot(interval,index){
   app.project.item(app.project.items.length).selected = false;
   snap.inPoint = interval.start;
   snap.outPoint = interval.end;
-  snap.moveAfter(comp.layer(index));
+  if(comp.layers.length > 1){
+    snap.moveAfter(comp.layer(index+1));
+  }
+  return snap;
+}
+
+function parentSnap(snap,origLayer,startTime){
+  for(var i=1;i<snap.transform.numProperties+1;i++){
+    if(snap.transform.property(i).canSetExpression){
+      initVal = origLayer.transform.property(i).valueAtTime(startTime,true);
+      propName = snap.transform.property(i).name;
+      if(initVal instanceof Array){
+        propExpression = "arr = thisProperty.value;\notherArr = thisComp.layer(\""+origLayer.name+"\").transform(\""+propName+"\");\n[arr[0]+otherArr[0]-"+initVal[0]+",arr[1]+otherArr[1]-"+initVal[1]+"]";
+      }else{
+        propExpression = "val = thisProperty.value;\n otherVal = thisComp.layer(\""+origLayer.name+"\").transform(\""+propName+"\");\n finalVal = val + otherVal - "+initVal+";\nfinalVal";
+      }
+      snap.transform.property(i).expression = propExpression;
+    }
+  }
 }
 
 function unSolo(compo){
@@ -113,6 +129,10 @@ function unSolo(compo){
 }
 
 function doAll(){
+  if(!comp || !(comp instanceof CompItem)){
+    alert("Select a comp");
+    return;
+  }
   // Get the layer:
   theLayers = getSoloLayers();
   if(theLayers == 'noSolo'){
@@ -128,7 +148,10 @@ function doAll(){
   splitLayers(theLayers.layers,timeInterval,comp.duration);
   // Drop the Snapshot:
   app.beginUndoGroup("Drop Shot");
-  dropSnapshot(timeInterval,theLayers.minIndex);
+  theSnap = dropSnapshot(timeInterval,theLayers.minIndex);
+  if(theLayers.layers.length == 1){
+    parentSnap(theSnap,theLayers.layers[0],timeInterval.start);
+  }
   app.endUndoGroup();
   // Restore prev res:
   comp.resolutionFactor = originalRes;
