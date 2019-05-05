@@ -1,5 +1,3 @@
-#targetengine intervals
-intervals = [];
 var comp = app.project.activeItem;
 
 SAVE_AS_FRAME_ID = 2104;
@@ -8,12 +6,25 @@ folder = Folder(STATIC_IMAGES_PATH);
 numFiles = folder.getFiles().length;
 STATIC_IMAGE_PATH = STATIC_IMAGES_PATH+"staticimage"+numFiles+".png";
 
-function getSoloLayer(){
+function getSoloLayers(){
   var comp = app.project.activeItem;
+  layers = [];
+  indicies = [];
   for(var i=1;i<comp.layers.length+1;i++){
     if(comp.layer(i).solo){
-      return comp.layer(i);
+      layers[layers.length] = comp.layer(i);
+      indicies[indicies.length] = i;
     }
+  }
+  if(layers.length == 0){
+    alert("noSolo");
+  }else{
+    minIndex = Math.min.apply(null,indicies);
+    obj = {
+      "layers":layers,
+      "minIndex": minIndex
+    }
+    return obj;
   }
 }
 
@@ -28,24 +39,43 @@ function getInterval(){
   return obj;
 }
 
-function splitLayer(layer,timeInterval,compDuration){
+function splitLayers(layers,timeInterval,compDuration){
   if(timeInterval.start == 0){
     app.beginUndoGroup("Split Layers");
-    layer.inPoint = timeInterval.end;
-    layer.outPoint = compDuration;
+    if(timeInterval.end == compDuration){
+      for(var i=0;i<layers.length;i++){
+        layers[i].enabled = false;
+      }
+    }else{
+      for(var i=0;i<layers.length;i++){
+      layers[i].inPoint = timeInterval.end;
+      layers[i].outPoint = compDuration;
+    }
+  }
     app.endUndoGroup();
   }else if(timeInterval.end == compDuration){
     app.beginUndoGroup("Split Layers");
-    layer.inPoint = 0;
-    layer.outPoint = timeInterval.start;
+    for(var i=0;i<layers.length;i++){
+    layers.inPoint = 0;
+    layers.outPoint = timeInterval.start;
+  }
     app.endUndoGroup();
   }else{
     app.beginUndoGroup("Split Layers");
-    leftLayer = layer.duplicate();
-    leftLayer.outPoint = timeInterval.start;
-    layer.inPoint = timeInterval.end;
+    for(var i=0;i<layers.length;i++){
+      leftLayer = layers[i].duplicate();
+      leftLayer.outPoint = timeInterval.start;
+      layers[i].inPoint = timeInterval.end;
+    }
+
     app.endUndoGroup();
   }
+}
+
+function setResolutionToFull(compo){
+  res = compo.resolutionFactor;
+  compo.resolutionFactor = [1,1];
+  return res;
 }
 
 function getSnapshot(snapTime){
@@ -60,20 +90,7 @@ function getSnapshot(snapTime){
   app.project.renderQueue.showWindow(false);
 }
 
-function addToQueue(){
-  for(var i=0;i<arguments.length;i++){
-    app.project.renderQueue.items.add(arguments[i]);
-  }
-}
-
-function clearQueue(){
-  num = app.project.renderQueue.numItems+1;
-  for(var i=1;i<num;i++){
-    app.project.renderQueue.item(1).remove();
-  }
-}
-
-function dropSnapshot(interval){
+function dropSnapshot(interval,index){
   var importedFile = File(STATIC_IMAGE_PATH);
   var importOptions = new ImportOptions();
   importOptions.file = importedFile;
@@ -83,18 +100,40 @@ function dropSnapshot(interval){
   app.project.item(app.project.items.length).selected = false;
   snap.inPoint = interval.start;
   snap.outPoint = interval.end;
+  snap.moveAfter(comp.layer(index));
 }
 
+function addToQueue(){
+  for(var i=0;i<arguments.length;i++){
+    app.project.renderQueue.items.add(arguments[i]);
+  }
+}
+
+function clearQueue(){
+  app.beginUndoGroup("Clear the Queue");
+  num = app.project.renderQueue.numItems+1;
+  for(var i=1;i<num;i++){
+    app.project.renderQueue.item(1).remove();
+  }
+  app.endUndoGroup();
+}
+
+
 // Get the layer:
-theLayer = getSoloLayer();
+theLayers = getSoloLayers();
 // Get the interval:
 timeInterval = getInterval();
-// Get the Shot:
+// Set res, and save prev res:
+originalRes = setResolutionToFull(comp);
+// Get the Snapshot:
 getSnapshot(timeInterval.start);
 // Split the Original Layer:
-splitLayer(theLayer,timeInterval,comp.duration);
-// Drop the Shot:
+splitLayers(theLayers.layers,timeInterval,comp.duration);
+// Drop the Snapshot:
 app.beginUndoGroup("Drop Shot");
-dropSnapshot(timeInterval);
+dropSnapshot(timeInterval,theLayers.minIndex);
 app.endUndoGroup();
-// clearQueue();
+// Restore prev res:
+comp.resolutionFactor = originalRes;
+// Clear the prev element:
+app.project.renderQueue.item(app.project.renderQueue.numItems).remove();
