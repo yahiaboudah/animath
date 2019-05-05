@@ -17,7 +17,7 @@ function getSoloLayers(){
     }
   }
   if(layers.length == 0){
-    alert("noSolo");
+    return "noSolo";
   }else{
     minIndex = Math.min.apply(null,indicies);
     obj = {
@@ -56,8 +56,9 @@ function splitLayers(layers,timeInterval,compDuration){
   }else if(timeInterval.end == compDuration){
     app.beginUndoGroup("Split Layers");
     for(var i=0;i<layers.length;i++){
-    layers.inPoint = 0;
-    layers.outPoint = timeInterval.start;
+      alert("Here");
+    layers[i].outPoint = timeInterval.start;
+    alert("Finished");
   }
     app.endUndoGroup();
   }else{
@@ -103,37 +104,39 @@ function dropSnapshot(interval,index){
   snap.moveAfter(comp.layer(index));
 }
 
-function addToQueue(){
-  for(var i=0;i<arguments.length;i++){
-    app.project.renderQueue.items.add(arguments[i]);
+function unSolo(compo){
+  for(var i=1;i<compo.layers.length;i++){
+    if(compo.layer(i).solo){
+      compo.layer(i).solo = false;
+    }
   }
 }
 
-function clearQueue(){
-  app.beginUndoGroup("Clear the Queue");
-  num = app.project.renderQueue.numItems+1;
-  for(var i=1;i<num;i++){
-    app.project.renderQueue.item(1).remove();
-  }
+function doAll(){
+  // Get the layer:
+  theLayers = getSoloLayers();
+  if(theLayers == 'noSolo'){
+    alert("noSolo");
+  }else{
+  // Get the interval:
+  timeInterval = getInterval();
+  // Set res, and save prev res:
+  originalRes = setResolutionToFull(comp);
+  // Get the Snapshot:
+  getSnapshot(timeInterval.start);
+  // Split the Original Layer:
+  splitLayers(theLayers.layers,timeInterval,comp.duration);
+  // Drop the Snapshot:
+  app.beginUndoGroup("Drop Shot");
+  dropSnapshot(timeInterval,theLayers.minIndex);
   app.endUndoGroup();
+  // Restore prev res:
+  comp.resolutionFactor = originalRes;
+  // Clear the prev element:
+  app.project.renderQueue.item(app.project.renderQueue.numItems).remove();
+  // Unsolo everything:
+  unSolo(comp);
+  }
 }
 
-
-// Get the layer:
-theLayers = getSoloLayers();
-// Get the interval:
-timeInterval = getInterval();
-// Set res, and save prev res:
-originalRes = setResolutionToFull(comp);
-// Get the Snapshot:
-getSnapshot(timeInterval.start);
-// Split the Original Layer:
-splitLayers(theLayers.layers,timeInterval,comp.duration);
-// Drop the Snapshot:
-app.beginUndoGroup("Drop Shot");
-dropSnapshot(timeInterval,theLayers.minIndex);
-app.endUndoGroup();
-// Restore prev res:
-comp.resolutionFactor = originalRes;
-// Clear the prev element:
-app.project.renderQueue.item(app.project.renderQueue.numItems).remove();
+doAll();
