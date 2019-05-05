@@ -1,3 +1,5 @@
+// The work area is the time interval
+
 var comp = app.project.activeItem;
 
 SAVE_AS_FRAME_ID = 2104;
@@ -110,6 +112,11 @@ function parentSnap(snap,origLayer,startTime){
     if(snap.transform.property(i).canSetExpression){
       initVal = origLayer.transform.property(i).valueAtTime(startTime,true);
       propName = snap.transform.property(i).name;
+      if(propName == "Scale"){
+        propExpression = "arr = thisProperty.value;\notherArr = thisComp.layer(\""+origLayer.name+"\").transform(\""+propName+"\");\n[arr[0]*(otherArr[0]/"+initVal[0]+"),arr[1]*(otherArr[1]/"+initVal[1]+")]";
+        snap.transform.property(i).expression = propExpression;
+        continue;
+      }
       if(initVal instanceof Array){
         propExpression = "arr = thisProperty.value;\notherArr = thisComp.layer(\""+origLayer.name+"\").transform(\""+propName+"\");\n[arr[0]+otherArr[0]-"+initVal[0]+",arr[1]+otherArr[1]-"+initVal[1]+"]";
       }else{
@@ -140,12 +147,12 @@ function doAll(){
   }else{
   // Get the interval:
   timeInterval = getInterval();
+  alert(timeInterval.start);
+  alert(timeInterval.end);
   // Set res, and save prev res:
   originalRes = setResolutionToFull(comp);
   // Get the Snapshot:
   getSnapshot(timeInterval.start);
-  // Split the Original Layer:
-  splitLayers(theLayers.layers,timeInterval,comp.duration);
   // Drop the Snapshot:
   app.beginUndoGroup("Drop Shot");
   theSnap = dropSnapshot(timeInterval,theLayers.minIndex);
@@ -153,6 +160,8 @@ function doAll(){
     parentSnap(theSnap,theLayers.layers[0],timeInterval.start);
   }
   app.endUndoGroup();
+  // Split the Original Layer:
+  // splitLayers(theLayers.layers,timeInterval,comp.duration);
   // Restore prev res:
   comp.resolutionFactor = originalRes;
   // Clear the prev element:
