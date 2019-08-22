@@ -1,3 +1,4 @@
+
 function setTime(t,compo){
   var wasLocked = false;
   var wasLayerLocked = false;
@@ -36,4 +37,4 @@ function changeTime(compa,time){
 }
 
 
-changeTime(80);
+// changeTime(80);

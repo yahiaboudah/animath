@@ -19,6 +19,7 @@ var morpherTabbedPanel = win.add("tabbedpanel");
     morpherTabbedPanel.preferredSize.width = 219.391;
     morpherTabbedPanel.margins = 0;
     morpherTabbedPanel.alignment = ["fill","top"];
+    morpherTabbedPanel.selection =null;
 
 // PREMORPHTAB
 // ===========
@@ -428,7 +429,7 @@ function rotateArray(array,direction,i){
   return arr;
 }
 
-function moveFirstVertex(path,index){
+function moveFirstVertex(path,index,time){
   pathValue = path.value;
   vert = pathValue.vertices;
   intan = pathValue.inTangents;
@@ -452,7 +453,7 @@ function moveFirstVertex(path,index){
   shape.inTangents = rotateArray(intan,direc,num);
   shape.outTangents = rotateArray(outtan,direc,num);
   shape.closed = isClosed;
-  path.setValue(shape);
+  path.setValueAtTime(time,shape);
 }
 
 function upperLeftIndex(list){
@@ -553,44 +554,48 @@ function sortIndices(list) {
   return result;
 }
 
-function morph(bMorph,aMorph,morphedIndices,morphedToIndices,firstVertex,morphTime){
+function morph(s){
   // Get current comp time:
   var compTime = app.project.activeItem.time;
+
   // loop through all properties
-  for(var j=1;j<bMorph[0].property("Contents").numProperties+1;j++){
+  for(var j=1;j<s.bMorph[0].property("Contents").numProperties+1;j++){
+
     // Get the right groups:
-    morphedIndex = morphedIndices[j-1];
-    morphedToIndex = morphedToIndices[j-1];
-    var group = bMorph[0].property("Contents").property(morphedIndex);
-    var otherGroup = aMorph[0].property("Contents").property(morphedToIndex);
+    morphedIndex = s.morphedIndices[j-1];
+    morphedToIndex = s.morphedToIndices[j-1];
+    var group = s.bMorph[0].property("Contents").property(morphedIndex);
+    var otherGroup = s.aMorph[0].property("Contents").property(morphedToIndex);
+
     // Get the right path prop index:
     var num = getPathProp(group);
     var otherNum = getPathProp(otherGroup);
     // Get the path props:
     var pathProp = group.property("Contents").property(num).path;
     var otherPathProp = otherGroup.property("Contents").property(otherNum).path;
+
+    lastKeyIndex  = group.property("Contents").property(num).numKeys;
+    lastKeyFrameTime = group.property("Contents").property(num).keyTime(lastKeyIndex);
+    currCompTime = app.project.activeItem.time;
+
     // Set the first vertex:
-    switch (firstVertex) {
-      case "DEFAULT":
-          break;
-      case "UPPERLEFT":
-          //moveFirstVertex(pathProp, "UPPERLEFT");
-          // moveFirstVertex(otherPathProp,"UPPERLEFT");
-          break;
-      case "CLOSEST":
-          moveFirstVertex();
-      default:
-      break;
+    if(lastKeyFrameTime < currCompTime){
+      moveFirstVertex(pathProp, s.firstVertex, lastKeyFrameTime);
+      moveFirstVertex(otherPathProp,s.firstVertex,lastKeyFrameTime);
+    }else{
+      moveFirstVertex(pathProp, s.firstVertex, lastKeyFrameTime);
+      moveFirstVertex(otherPathProp,  s.firstVertex, lastKeyFrameTime);
     }
+
     // Get pos properies:
     var thisPos = group.property("Transform").property("Position");
     var otherPos = otherGroup.property("Transform").property("Position");
     // Set the path value in that group:
     pathProp.setValueAtTime(compTime,pathProp.value);
-    pathProp.setValueAtTime(compTime+morphTime,otherPathProp.value);
+    pathProp.setValueAtTime(compTime+s.morphTime,otherPathProp.value);
     // Set the pos value:
     thisPos.setValueAtTime(compTime,thisPos.value);
-    thisPos.setValueAtTime(compTime+morphTime,otherPos.value);
+    thisPos.setValueAtTime(compTime+s.morphTime,otherPos.value);
 }
 }
 
@@ -602,6 +607,7 @@ premorphTabGetSelectedButton.onClick = function(){
     return;
   }else{
     beforeMorph = selLayers;
+    // UI changes:
     selLayersNames = "";
     for(var i=0;i<selLayers.length;i++){
       selLayersNames += selLayers[i].name;
@@ -618,6 +624,7 @@ postmorphTabGetSelectedButton.onClick = function(){
     return;
   }else{
     afterMorph = selLayers;
+    // UI changes:
     selLayersNames = "";
     for(var i=0;i<selLayers.length;i++){
       selLayersNames += selLayers[i].name;
@@ -625,11 +632,12 @@ postmorphTabGetSelectedButton.onClick = function(){
       selLayersNames += ",";}
     }
     postmorphTabSelectedLayerName.text = selLayersNames;
+
   }
 }
 
 morphButton.onClick = function(){
-  var morphTime =
+  var morphTime = parseFloat(settingsTabMorphingTimePanelEditText.text);
   var fVertex = "UPPERLEFT";
 
   // Get distaces from upper left corner:
@@ -640,11 +648,18 @@ morphButton.onClick = function(){
   bmoIndices = sortIndices(bmoDist);
   amoIndices = sortIndices(amoDist);
 
+  settings = {
+    bMorph:beforeMorph,
+    aMorph: afterMorph,
+    morphedIndices: bmoIndices,
+    morphedToIndices: amoIndices,
+    firstVertex: fVertex,
+    morphTime:morphTime
+  };
   // Morph it!
   app.beginUndoGroup("MorphIt");
-  morph(beforeMorph,afterMorph,bmoIndices,amoIndices,fVertex,morphTime);
+  morph(settings);
   app.endUndoGroup();
-
 }
 
 // UI on-clicks:
@@ -684,4 +699,4 @@ settingsTabCustomRadioButton.onClick = function(){
 //   layer = app.project.activeItem.selectedLayers[0];
 //   oldShape = layer.property("Contents").property(propNum).property("Contents").property("Path 1").path;
 //   moveFirstVertex(oldShape,"UPPERLEFT");
-//}
+// }

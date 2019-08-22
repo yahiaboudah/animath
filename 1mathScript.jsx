@@ -484,7 +484,7 @@ function Hand(scale){
   var footage = app.project.importFile(importOptions);
   var layer = comp.layers.add(footage);
   app.project.item(app.project.items.length).selected = false;
-}else{
+  }else{
   var item = app.project.item(fileIndex);
   var layer = comp.layers.add(item);
 }

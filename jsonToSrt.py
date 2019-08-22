@@ -2,8 +2,8 @@ from datetime import timedelta
 import json as json
 import srt
 
-SCENE_PATH = 'C:\\Users\\HP\\Desktop\\Banana61\\00Videos\\'
-SCENE_NAME = 'simple nn'
+SCENE_PATH = 'C:\\Users\\HP\\Desktop\\Banana61\\00Videos\\scenes\\'
+SCENE_NAME = 'scene1'
 
 def import_json(file_path):
     with open(file_path,'r') as f:
@@ -28,7 +28,6 @@ def get_srt(json_obj):
 def write_srt(name,contents):
     with open(name,'w') as f:
         f.write(contents)
-
 
 j = import_json(SCENE_PATH+SCENE_NAME+'.json')
 srtobj = get_srt(j)
