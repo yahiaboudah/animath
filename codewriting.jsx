@@ -35,12 +35,15 @@ function addAnimatorProp(txtAnimator,animatorName,animExpression,highLightingCol
 }
 
 function getSyntaxJSON(){
+  return $.deser(File("syntax.json").$read());
+  /*
   var jsonFile = File("syntax.json");
   jsonFile.open('r');
   jsonContent = jsonFile.read();
   jsonFile.close();
   var jsonObj = JSON.parse(jsonContent);
   return jsonObj;
+  */
 }
 
 function getPoints(text,patt,replacepatt){
