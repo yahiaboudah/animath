@@ -504,6 +504,14 @@ fireUp.onClick = function(){
 }
 
 fireWeights.onClick = function(){
+  
+  app.wrapUndo(
+    fire,
+    $prompt("Flash time", 1.2, parseFloat), $.$colorPicker(1),
+    fireReverseCheck.value
+  );
+  
+  /*
   app.beginUndoGroup("Fire weights");
   var hexColor = $.colorPicker();
   var r = hexColor >> 16;
@@ -514,6 +522,7 @@ fireWeights.onClick = function(){
   promptValue = parseFloat(promptValue);
   fire(promptValue,[r,g,b,1],fireReverseCheck.value);
   app.endUndoGroup();
+  */
 }
 
 modify.onClick = function(){
